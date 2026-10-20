@@ -8,7 +8,13 @@ except ImportError:
     pass
 SECRET_KEY = os.getenv("SECRET_KEY", "local-dev-key-change-before-deploying")
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
-ALLOWED_HOSTS = [x.strip() for x in os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")]
+ALLOWED_HOSTS = [
+    x.strip()
+    for x in os.getenv(
+        "ALLOWED_HOSTS",
+        "127.0.0.1,localhost,sve-4qp7.onrender.com"
+    ).split(",")
+]
 INSTALLED_APPS = [
  "django.contrib.admin","django.contrib.auth","django.contrib.contenttypes",
  "django.contrib.sessions","django.contrib.messages","django.contrib.staticfiles","shop",
