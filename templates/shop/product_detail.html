@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load sheet_tags %}{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1 class="page-title">{{ product.name }}</h1><div class="page-sub">HSN code: <strong>{{ product.hsn_code|default:"—" }}</strong> · date-wise stock history</div></div>
+  <div class="page-actions">
+    <a class="btn btn-outline-secondary" href="{% url 'product_list' %}">Back</a>
+    <a class="btn btn-outline-secondary" href="{% url 'product_edit' product.pk %}"><svg class="ic"><use href="#i-edit"/></svg>Edit product</a>
+    <a class="btn btn-primary" href="{% url 'sheet' %}?product={{ product.pk }}#entry-form"><svg class="ic"><use href="#i-plus"/></svg>Add stock entry</a>
+  </div>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-4"><div class="card card-body"><div class="page-sub m-0">Total stock bought</div><div class="big-num">{{ total_stock|trim }}</div></div></div>
+  <div class="col-4"><div class="card card-body"><div class="page-sub m-0">Total sales</div><div class="big-num">{{ total_sales|trim }}</div></div></div>
+  <div class="col-4"><div class="card card-body"><div class="page-sub m-0">Balance</div><div class="big-num">{{ total_balance|trim }}</div></div></div>
+</div>
+<div class="card"><div class="table-responsive"><table class="table table-hover">
+  <thead><tr><th>Date</th><th>HSN code</th><th>Vendor</th><th class="num">Stock</th><th class="num">Sales</th><th class="num">Balance</th><th class="num">MRP</th><th class="num">Disc %</th><th class="num">Price</th><th class="num no-print">Actions</th></tr></thead>
+  <tbody>
+  {% for e in entries %}<tr>
+    <td class="text-nowrap cell-strong">{{ e.entry_date|date:"d-m-Y" }}</td>
+    <td>{{ product.hsn_code|default:"—" }}</td>
+    <td>{% if e.vendor %}<a href="{% url 'vendor_detail' e.vendor_id %}">{{ e.vendor.name }}</a>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+    <td class="num">{{ e.stock|trim }}</td>
+    <td class="num">{% if e.sales is None %}<span class="text-muted">-</span>{% else %}{{ e.sales|trim }}{% endif %}</td>
+    <td class="num">{{ e.balance|trim }}</td>
+    <td class="num">{% if e.mrp is None %}<span class="text-muted">-</span>{% else %}₹{{ e.mrp|floatformat:"2g" }}{% endif %}</td><td class="num">{% if e.disc is None %}<span class="text-muted">-</span>{% else %}{{ e.disc|trim }}%{% endif %}</td><td class="num cell-strong">{% if e.price is None %}<span class="text-muted fw-normal">-</span>{% else %}₹{{ e.price|floatformat:"2g" }}{% endif %}</td>
+    <td class="num no-print"><a class="btn btn-outline-secondary btn-sm" href="{% url 'sheet_edit' e.pk %}?next={{ request.path|urlencode }}#entry-form"><svg class="ic"><use href="#i-edit"/></svg>Edit</a></td>
+  </tr>
+  {% empty %}<tr><td colspan="10" class="empty"><strong>No stock entries yet</strong>Add this product in the Sheet to see its date-wise history here.</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}

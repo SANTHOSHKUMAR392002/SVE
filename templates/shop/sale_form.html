@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}New Sale{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1 class="page-title">New bill</h1><div class="page-sub">Stock reduces automatically when you save.</div></div></div>
+<form method="post" id="bill-form" novalidate>{% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="card mb-3"><div class="card-head"><h2>Bill details</h2></div><div class="card-body"><div class="row g-3">
+    <div class="col-md-4"><label class="form-label" for="{{ form.sale_date.id_for_label }}">{{ form.sale_date.label }}</label>{{ form.sale_date }}{% for e in form.sale_date.errors %}<div class="field-error">{{ e }}</div>{% endfor %}</div>
+    <div class="col-md-4"><label class="form-label" for="{{ form.customer_name.id_for_label }}">{{ form.customer_name.label }}</label>{{ form.customer_name }}{% for e in form.customer_name.errors %}<div class="field-error">{{ e }}</div>{% endfor %}</div>
+    <div class="col-md-4"><label class="form-label" for="{{ form.customer_phone.id_for_label }}">{{ form.customer_phone.label }}</label>{{ form.customer_phone }}{% for e in form.customer_phone.errors %}<div class="field-error">{{ e }}</div>{% endfor %}</div>
+    <div class="col-md-4"><label class="form-label" for="{{ form.discount.id_for_label }}">{{ form.discount.label }}</label>{{ form.discount }}{% for e in form.discount.errors %}<div class="field-error">{{ e }}</div>{% endfor %}</div>
+  </div></div></div>
+  <div class="card bill-card"><div class="card-head"><h2>Products</h2><span class="hint">Type the product name and pick it from the list. HSN fills automatically; price follows the quantity.</span></div><div class="card-body">
+    <div class="table-responsive"><table class="table bill-table" id="items"><thead><tr><th style="min-width:260px">Product</th><th style="width:140px">HSN code</th><th style="width:150px">Quantity</th><th style="width:140px">Unit price (₹)</th><th class="num" style="width:140px">Price</th><th style="width:48px"></th></tr></thead><tbody></tbody></table></div>
+    <button type="button" id="add-row" class="btn btn-outline-secondary btn-sm"><svg class="ic"><use href="#i-plus"/></svg>Add product</button>
+    <input type="hidden" name="items_json" id="items-json">
+    <div class="bill-totals"><div><span>Sub total</span><span id="sub-total">₹0.00</span></div><div class="grand"><span>Grand total</span><span id="grand-total">₹0.00</span></div></div>
+  </div></div>
+  <div class="action-bar"><a class="btn btn-outline-secondary" href="{% url 'sale_list' %}">Cancel</a><button class="btn btn-primary">Save bill</button></div>
+</form>
+{{ products|json_script:"products-data" }}
+{% endblock %}
+{% block scripts %}<script src="/static/js/line_items.js"></script><script>initLineItems({products:JSON.parse(document.getElementById("products-data").textContent)});</script>{% endblock %}

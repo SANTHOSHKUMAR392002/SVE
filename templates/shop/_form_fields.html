@@ -1,0 +1,14 @@
+{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+<div class="row g-3">
+{% for field in form %}
+  <div class="{% if cols == '6' and field.widget_type != 'textarea' %}col-md-6{% else %}col-12{% endif %}">
+    {% if field.widget_type == 'checkbox' %}
+      <div class="form-check form-switch">{{ field }}<label class="form-check-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label></div>
+    {% else %}
+      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+    {% endif %}
+    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+    {% for e in field.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+  </div>
+{% endfor %}
+</div>

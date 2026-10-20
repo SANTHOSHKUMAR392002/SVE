@@ -1,0 +1,63 @@
+{% extends "base.html" %}{% load sheet_tags %}{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1 class="page-title">Reports</h1><div class="page-sub">Date-wise stock and sales · {{ start|date:"d-m-Y" }} to {{ end|date:"d-m-Y" }}</div></div>
+  <div class="page-actions"><a class="btn btn-primary" href="{% url 'reports_pdf' %}?{{ query }}"><svg class="ic"><use href="#i-file"/></svg>Export PDF</a></div>
+</div>
+
+<div class="card filter-card">
+  <form method="get">
+    <div><label class="form-label" for="r-start">From</label><input id="r-start" class="form-control" type="date" name="start" value="{{ start|date:'Y-m-d' }}"></div>
+    <div><label class="form-label" for="r-end">To</label><input id="r-end" class="form-control" type="date" name="end" value="{{ end|date:'Y-m-d' }}"></div>
+    <button class="btn btn-primary">Apply</button>
+    <div class="chips">
+      {% for label,s,e in presets %}<a class="chip {% if s == start and e == end %}on{% endif %}" href="?start={{ s|date:'Y-m-d' }}&end={{ e|date:'Y-m-d' }}">{{ label }}</a>{% endfor %}
+    </div>
+  </form>
+</div>
+
+<section class="kpis" aria-label="Summary">
+  <div class="kpi teal"><div class="kpi-label">Stock bought</div><div class="kpi-value">{{ tot.stock|trim }}</div></div>
+  <div class="kpi orange"><div class="kpi-label">Sales</div><div class="kpi-value">{{ tot.sales|trim }}</div></div>
+  <div class="kpi indigo"><div class="kpi-label">Balance</div><div class="kpi-value">{{ tot.balance|trim }}</div></div>
+  <div class="kpi green"><div class="kpi-label">Entries</div><div class="kpi-value">{{ tot.entries }}</div><div class="kpi-sub">{{ rows|length }} date{{ rows|length|pluralize }}</div></div>
+</section>
+
+<div class="card chart-card mb-4">
+  <div class="card-head"><h2>Stock &amp; Sales by date</h2></div>
+  <div class="chart-box">
+    <canvas id="main-chart" aria-label="Stock and sales per date"></canvas>
+    <div class="chart-empty"><div><strong>No entries in this period</strong>Try a wider date range.</div></div>
+  </div>
+</div>
+
+<div class="card"><div class="table-responsive"><table class="table table-hover">
+  <thead><tr><th>Date</th><th>Day</th><th class="num">Entries</th><th class="num">Stock</th><th class="num">Sales</th><th class="num">Balance</th></tr></thead>
+  <tbody>
+  {% for r in rows %}<tr>
+    <td class="cell-strong text-nowrap">{{ r.date|date:"d-m-Y" }}</td><td class="text-muted">{{ r.date|date:"l" }}</td>
+    <td class="num">{{ r.entries }}</td><td class="num"><span class="legend-dot" style="background:#0E7C7B"></span>{{ r.stock|trim }}</td>
+    <td class="num"><span class="legend-dot" style="background:#F97316"></span>{{ r.sales|trim }}</td><td class="num cell-strong">{{ r.balance|trim }}</td>
+  </tr>
+  {% empty %}<tr><td colspan="6" class="empty"><strong>No entries in this period</strong>Try a wider date range.</td></tr>{% endfor %}
+  </tbody>
+  {% if rows %}<tfoot><tr class="total-row"><td colspan="2">Total</td><td class="num">{{ tot.entries }}</td><td class="num">{{ tot.stock|trim }}</td><td class="num">{{ tot.sales|trim }}</td><td class="num">{{ tot.balance|trim }}</td></tr></tfoot>{% endif %}
+</table></div></div>
+<div class="card mt-4">
+  <div class="card-head"><h2>Vendor-wise supply</h2><span class="hint">{{ vendor_rows|length }} vendor{{ vendor_rows|length|pluralize }} in this period</span></div>
+  <div class="table-responsive"><table class="table table-hover">
+    <thead><tr><th>Vendor</th><th>GST number</th><th class="num">Entries</th><th class="num">Stock</th><th class="num">Sales</th><th class="num">Amount (stock × price)</th></tr></thead>
+    <tbody>{% for v in vendor_rows %}<tr>
+      <td class="cell-strong"><a href="{% url 'vendor_detail' v.id %}">{{ v.name }}</a></td>
+      <td>{% if v.gst %}<span class="gst">{{ v.gst }}</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+      <td class="num">{{ v.entries }}</td><td class="num">{{ v.stock|trim }}</td><td class="num">{{ v.sales|trim }}</td><td class="num cell-strong">₹{{ v.amount|floatformat:"2g" }}</td>
+    </tr>{% empty %}<tr><td colspan="6" class="empty"><strong>No vendor entries in this period</strong>Pick a vendor in the Sheet to see it here.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{{ chart|json_script:"chart-data" }}
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="/static/js/charts.js"></script>
+<script>renderStockSalesChart('main-chart','chart-data');</script>
+{% endblock %}

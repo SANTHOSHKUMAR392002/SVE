@@ -1,0 +1,162 @@
+{% extends "base.html" %}{% load sheet_tags %}{% block title %}Sheet{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1 class="page-title">Sheet</h1><div class="page-sub">{{ entry_count }} entr{{ entry_count|pluralize:"y,ies" }}{% if q or start or end %} (filtered){% endif %} · date-wise, S.No restarts from 1 for every date</div></div>
+  <div class="page-actions">
+    <a class="btn btn-outline-secondary" href="{% url 'sheet_pdf' %}?{{ query }}"><svg class="ic"><use href="#i-file"/></svg>Download PDF</a>
+    <a class="btn btn-outline-secondary" href="{% url 'sheet_word' %}?{{ query }}"><svg class="ic"><use href="#i-file"/></svg>Download Word</a>
+  </div>
+</div>
+
+<form method="post" id="entry-form" class="mb-4" novalidate>{% csrf_token %}
+  <div class="card {% if editing %}sheet-editing{% endif %}">
+    <div class="card-head">
+      <h2>{% if editing %}Edit entry{% else %}New entry{% endif %}</h2>
+      <span class="hint">Type a product or vendor name and pick from the list. New names are saved to Products / Vendors automatically.</span>
+    </div>
+    <div class="card-body">
+      {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="row g-3">
+        <div class="col-6 col-md-2"><label class="form-label" for="sno-box">S.No</label><input class="form-control" id="sno-box" value="{{ next_sno }}" readonly tabindex="-1" aria-readonly="true"></div>
+        {% for f in form %}
+        <div class="{% if f.name == 'entry_date' %}col-6 col-md-3{% elif f.name == 'product_name' %}col-12 col-md-7{% elif f.name == 'vendor_name' %}col-12 col-md-6{% elif f.name == 'price' %}col-6 col-md-3{% else %}col-6 col-md-3{% endif %}">
+          <label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+          {% if f.name == 'product_name' %}<div class="ac-wrap">{{ f }}<ul class="ac-list" id="ac-list" role="listbox" hidden></ul></div>
+          {% elif f.name == 'vendor_name' %}<div class="ac-wrap">{{ f }}<ul class="ac-list" id="ac-list-v" role="listbox" hidden></ul></div><div class="form-text" id="vendor-hint"></div>
+          {% else %}{{ f }}{% endif %}
+          {% if f.name == 'hsn_code' %}<div class="form-text" id="hsn-hint"></div>{% endif %}
+          {% for e in f.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card-body pt-0 d-flex justify-content-end gap-2">
+      {% if editing %}<a class="btn btn-outline-secondary" href="{% if next_url %}{{ next_url }}{% else %}{% url 'sheet' %}?{{ query }}{% endif %}">Cancel</a>{% endif %}
+      <button class="btn btn-primary" type="submit">{% if editing %}Update entry{% else %}Save entry{% endif %}</button>
+    </div>
+  </div>
+</form>
+
+<form class="toolbar" method="get">
+  <div class="searchbox"><svg class="ic"><use href="#i-search"/></svg><input name="q" value="{{ q }}" class="form-control" placeholder="Search product, HSN or vendor" aria-label="Search sheet"></div>
+  <input type="date" name="start" value="{{ start }}" class="form-control w-auto" aria-label="From date">
+  <input type="date" name="end" value="{{ end }}" class="form-control w-auto" aria-label="To date">
+  <button class="btn btn-outline-secondary">Filter</button>
+  {% if q or start or end %}<a class="btn btn-outline-secondary" href="{% url 'sheet' %}">Clear</a>{% endif %}
+</form>
+
+<div class="card"><div class="table-responsive"><table class="table table-hover sheet-table">
+  <thead><tr><th>S.No</th><th>Product name</th><th>HSN code</th><th>Vendor</th><th class="num">Stock</th><th class="num">Sales</th><th class="num">Balance</th><th class="num">MRP</th><th class="num">Disc %</th><th class="num">Price</th><th class="num no-print">Actions</th></tr></thead>
+  <tbody>
+  {% for g in groups %}
+  <tr class="date-row"><td colspan="11"><span class="date-main">{{ g.date|date:"d-m-Y" }}</span><span class="date-meta">{{ g.date|date:"l" }} · {{ g.rows|length }} entr{{ g.rows|length|pluralize:"y,ies" }} · stock {{ g.stock|trim }} · sales {{ g.sales|trim }}</span></td></tr>
+  {% for e in g.rows %}<tr {% if editing and editing.pk == e.pk %}class="table-active"{% endif %}>
+    <td><span class="sku">{{ e.sno }}</span></td>
+    <td class="cell-strong"><a href="{% url 'product_detail' e.product_id %}">{{ e.product.name }}</a></td>
+    <td>{{ e.product.hsn_code }}</td>
+    <td>{% if e.vendor %}<a href="{% url 'vendor_detail' e.vendor_id %}">{{ e.vendor.name }}</a>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+    <td class="num">{{ e.stock|trim }}</td>
+    <td class="num">{% if e.sales is None %}<span class="text-muted">-</span>{% else %}{{ e.sales|trim }}{% endif %}</td>
+    <td class="num">{{ e.balance|trim }}</td>
+    <td class="num">{% if e.mrp is None %}<span class="text-muted">-</span>{% else %}₹{{ e.mrp|floatformat:"2g" }}{% endif %}</td>
+    <td class="num">{% if e.disc is None %}<span class="text-muted">-</span>{% else %}{{ e.disc|trim }}%{% endif %}</td>
+    <td class="num cell-strong">{% if e.price is None %}<span class="text-muted fw-normal">-</span>{% else %}₹{{ e.price|floatformat:"2g" }}{% endif %}</td>
+    <td class="num no-print">
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'sheet_edit' e.pk %}?{{ query }}#entry-form"><svg class="ic"><use href="#i-edit"/></svg>Edit</a>
+      <form method="post" action="{% url 'sheet_delete' e.pk %}" class="d-inline" onsubmit="return confirm('Delete S.No {{ e.sno }} of {{ g.date|date:"d-m-Y" }}?')">{% csrf_token %}<button class="btn btn-outline-danger btn-sm" aria-label="Delete entry {{ e.sno }}"><svg class="ic"><use href="#i-trash"/></svg></button></form>
+    </td>
+  </tr>{% endfor %}
+  {% empty %}<tr><td colspan="11" class="empty"><strong>No entries yet</strong>Fill the form above and save to see it here.</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{{ products|json_script:"product-data" }}
+{{ vendors|json_script:"vendor-data" }}
+{{ date_counts|json_script:"date-counts" }}
+{{ edit_info|json_script:"edit-info" }}
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+  var f=document.getElementById('entry-form'); if(!f) return;
+  function J(id){try{return JSON.parse(document.getElementById(id).textContent);}catch(e){return null;}}
+  function norm(s){return String(s||'').replace(/\s+/g,' ').trim().toLowerCase();}
+  var products=J('product-data')||[], vendors=J('vendor-data')||[], counts=J('date-counts')||{}, edit=J('edit-info');
+  if(edit){f.scrollIntoView({block:'start'});}
+  var dateI=f.querySelector('[name=entry_date]'), sno=document.getElementById('sno-box'),
+      name=f.querySelector('[name=product_name]'), hsn=f.querySelector('[name=hsn_code]'), hint=document.getElementById('hsn-hint'),
+      vname=f.querySelector('[name=vendor_name]'), vhint=document.getElementById('vendor-hint'),
+      stock=f.querySelector('[name=stock]');
+  var byName={}; products.forEach(function(p){byName[norm(p.name)]=p;});
+  var byVendor={}; vendors.forEach(function(v){byVendor[norm(v.name)]=v;});
+
+  /* S.No = position inside the chosen date */
+  function updSno(){var d=dateI.value; sno.value=(edit && d===edit.date)?edit.sno:((counts[d]||0)+1);}
+  dateI.addEventListener('input',updSno); dateI.addEventListener('change',updSno);
+
+  /* Generic dropdown: nothing on focus, only matching names while typing */
+  function attach(input,list,items,meta,onPick){
+    var shown=[],act=-1;
+    function hide(){list.hidden=true; list.innerHTML=''; shown=[]; act=-1;}
+    function pick(it){input.value=it.name; hide(); onPick(it);}
+    function render(){
+      var q=norm(input.value); if(!q){hide();return;}
+      var m=items.filter(function(p){return norm(p.name).indexOf(q)!==-1;});
+      m.sort(function(a,b){return (norm(a.name).indexOf(q)===0?0:1)-(norm(b.name).indexOf(q)===0?0:1);});
+      shown=m.slice(0,8); act=-1; list.innerHTML='';
+      if(!shown.length){list.hidden=true;return;}
+      shown.forEach(function(p){
+        var li=document.createElement('li'); li.setAttribute('role','option');
+        var a=document.createElement('span'); a.textContent=p.name;
+        var b=document.createElement('span'); b.className='ac-hsn'; b.textContent=meta(p);
+        li.appendChild(a); li.appendChild(b);
+        li.addEventListener('mousedown',function(e){e.preventDefault(); pick(p);});
+        list.appendChild(li);
+      });
+      list.hidden=false;
+    }
+    function mark(){Array.prototype.forEach.call(list.children,function(li,i){li.classList.toggle('active',i===act);});}
+    input.addEventListener('input',render);
+    input.addEventListener('keydown',function(e){
+      if(list.hidden) return;
+      if(e.key==='ArrowDown'){e.preventDefault(); act=(act+1)%shown.length; mark();}
+      else if(e.key==='ArrowUp'){e.preventDefault(); act=(act<=0?shown.length:act)-1; mark();}
+      else if(e.key==='Enter' && act>=0){e.preventDefault(); pick(shown[act]);}
+      else if(e.key==='Escape'){hide();}
+    });
+    input.addEventListener('blur',hide);
+  }
+
+  /* Product: HSN is fixed for an existing product, free for a new one */
+  var auto=false;
+  function syncProduct(){
+    var p=byName[norm(name.value)];
+    if(p){hsn.value=p.hsn_code; hsn.readOnly=true; hsn.classList.add('locked'); auto=true; hint.textContent='Existing product – HSN code is fixed.';}
+    else{
+      if(auto){hsn.value=''; auto=false;}
+      hsn.readOnly=false; hsn.classList.remove('locked');
+      hint.textContent=norm(name.value)?'New product – enter its HSN code; it will be saved in Products.':'';
+    }
+  }
+  attach(name,document.getElementById('ac-list'),products,function(p){return p.hsn_code?('HSN '+p.hsn_code):'';},function(){syncProduct(); name.dispatchEvent(new Event('picked')); (vname||stock).focus();});
+  name.addEventListener('input',syncProduct);
+
+  /* Vendor: first time a new name is typed it is saved; next time it shows in the dropdown */
+  function syncVendor(){
+    var v=norm(vname.value);
+    vhint.textContent=!v?'':(byVendor[v]?'Existing vendor.':'New vendor – will be saved in Vendors.');
+  }
+  attach(vname,document.getElementById('ac-list-v'),vendors,function(v){return v.phone||'';},function(){syncVendor(); stock.focus();});
+  vname.addEventListener('input',syncVendor);
+
+  document.addEventListener('click',function(e){if(!f.contains(e.target)){document.getElementById('ac-list').hidden=true;document.getElementById('ac-list-v').hidden=true;}});
+  /* MRP - (MRP x Disc%) = Price (auto). Price stays editable only when MRP is empty */
+  var mrp=f.querySelector('[name=mrp]'), disc=f.querySelector('[name=disc]'), price=f.querySelector('[name=price]');
+  function calc(){
+    var m=parseFloat(mrp.value);
+    if(!isNaN(m)){ var d=Math.min(Math.max(parseFloat(disc.value)||0,0),100); price.value=(Math.round(m*(1-d/100)*100)/100).toFixed(2); price.readOnly=true; price.classList.add('locked'); }
+    else{ price.readOnly=false; price.classList.remove('locked'); }
+  }
+  mrp.addEventListener('input',calc); disc.addEventListener('input',calc);
+  updSno(); syncProduct(); syncVendor(); if(!edit||mrp.value) calc();
+})();
+</script>
+{% endblock %}

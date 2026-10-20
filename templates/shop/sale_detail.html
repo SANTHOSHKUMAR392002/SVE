@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% block title %}Invoice {{ sale.invoice_number }}{% endblock %}
+{% block sitewm %}{% endblock %}
+{% block content %}
+<div class="page-head no-print">
+  <div><h1 class="page-title">Sales invoice</h1><div class="page-sub">{{ sale.invoice_number }}</div></div>
+  <div class="page-actions"><button class="btn btn-outline-secondary" onclick="window.print()"><svg class="ic"><use href="#i-print"/></svg>Print bill</button><a class="btn btn-primary" href="{% url 'sale_create' %}"><svg class="ic"><use href="#i-plus"/></svg>New bill</a></div>
+</div>
+<div class="card invoice"><img class="inv-watermark" src="/static/img/watermark.png" alt="" aria-hidden="true"><div class="card-body">
+  <div class="inv-head">
+    <div class="inv-brand"><img class="inv-logo" src="/static/img/logo-600.png" alt=""><div><h2 class="inv-shop">{{ SHOP_NAME }}</h2><div class="inv-code">{{ SHOP_CODE }}</div></div></div>
+    <div class="inv-title"><div class="t">Sales invoice</div><div class="n">{{ sale.invoice_number }}</div></div>
+  </div>
+  <div class="inv-meta">
+    <div><div class="k">Billed to</div><div class="v">{{ sale.customer_name }}</div></div>
+    <div><div class="k">Phone</div><div class="v">{{ sale.customer_phone|default:"—" }}</div></div>
+    <div><div class="k">Date</div><div class="v">{{ sale.sale_date }}</div></div>
+  </div>
+  <div class="table-responsive"><table class="table">
+    <thead><tr><th>#</th><th>Product ID</th><th>Product</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Total</th></tr></thead>
+    <tbody>{% for item in sale.items.all %}<tr><td>{{ forloop.counter }}</td><td>{{ item.product.sku }}</td><td class="cell-strong">{{ item.product.name }}</td><td class="num">{{ item.quantity }}</td><td class="num">₹{{ item.unit_price }}</td><td class="num cell-strong">₹{{ item.line_total }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  <div class="inv-totals"><div><span>Discount</span><span>₹{{ sale.discount }}</span></div><div class="grand"><span>Grand total</span><span>₹{{ sale.total_amount }}</span></div></div>
+  <div class="inv-thanks">Thank you for shopping with us!</div>
+</div></div>
+{% endblock %}

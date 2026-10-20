@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load sheet_tags %}{% block title %}Products{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1 class="page-title">Products</h1><div class="page-sub">{{ products|length }} item{{ products|length|pluralize }}{% if q %} matching “{{ q }}”{% endif %} · click a product to see its date-wise stock history</div></div>
+  <div class="page-actions"><a class="btn btn-outline-secondary" href="{% url 'product_pdf' %}{% if q %}?q={{ q|urlencode }}{% endif %}"><svg class="ic"><use href="#i-file"/></svg>Download PDF</a> <a class="btn btn-primary" href="{% url 'product_create' %}"><svg class="ic"><use href="#i-plus"/></svg>Add product</a></div>
+</div>
+<form class="toolbar" method="get">
+  <div class="searchbox"><svg class="ic"><use href="#i-search"/></svg><input name="q" value="{{ q }}" class="form-control" placeholder="Search product name or HSN" aria-label="Search products"></div>
+  <button class="btn btn-outline-secondary">Search</button>
+  {% if q %}<a class="btn btn-outline-secondary" href="{% url 'product_list' %}">Clear</a>{% endif %}
+</form>
+<div class="card"><div class="table-responsive"><table class="table table-hover">
+  <thead><tr><th>#</th><th>Product name</th><th>HSN code</th><th class="num">Stock bought</th><th class="num">Sales</th><th class="num">Balance</th><th class="num no-print">Actions</th></tr></thead>
+  <tbody>
+  {% for p in products %}<tr>
+    <td class="text-muted">{{ forloop.counter }}</td>
+    <td class="cell-strong"><a href="{% url 'product_detail' p.pk %}">{{ p.name }}</a></td>
+    <td>{{ p.hsn_code|default:"—" }}</td>
+    <td class="num">{{ p.total_stock|default_if_none:0|trim }}</td>
+    <td class="num">{{ p.total_sales|default_if_none:0|trim }}</td>
+    <td class="num cell-strong">{{ p.balance|trim }}</td>
+    <td class="num no-print"><a class="btn btn-outline-secondary btn-sm" href="{% url 'product_detail' p.pk %}">History</a> <a class="btn btn-outline-secondary btn-sm" href="{% url 'product_edit' p.pk %}"><svg class="ic"><use href="#i-edit"/></svg>Edit</a></td>
+  </tr>
+  {% empty %}<tr><td colspan="7" class="empty"><strong>No products found</strong>Products are added here automatically when you enter a new product name in the Sheet, or add one now.<br><a class="btn btn-primary btn-sm" href="{% url 'product_create' %}">Add product</a></td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}

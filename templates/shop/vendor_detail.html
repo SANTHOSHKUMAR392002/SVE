@@ -1,0 +1,55 @@
+{% extends "base.html" %}{% load sheet_tags %}{% block title %}{{ vendor.name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <a class="back-link" href="{% url 'vendor_list' %}"><svg class="ic" style="transform:rotate(180deg)"><use href="#i-arrow"/></svg>All vendors</a>
+    <div class="head-with-avatar"><span class="avatar-lg">{{ vendor.name|slice:":1"|upper }}</span>
+      <div><h1 class="page-title">{{ vendor.name }}</h1><div class="page-sub"><span class="sku">{{ vendor.vendor_code }}</span></div></div></div>
+  </div>
+  <div class="page-actions">
+    <a class="btn btn-outline-secondary" href="{% url 'vendor_edit' vendor.pk %}"><svg class="ic"><use href="#i-edit"/></svg>Edit vendor</a>
+    <a class="btn btn-primary" href="{% url 'sheet' %}#entry-form"><svg class="ic"><use href="#i-plus"/></svg>New sheet entry</a>
+  </div>
+</div>
+
+<div class="card mb-4"><dl class="detail-grid m-0">
+  <div><dt>Phone</dt><dd>{{ vendor.phone|default:"—" }}</dd></div>
+  <div><dt>Email</dt><dd>{{ vendor.email|default:"—" }}</dd></div>
+  <div><dt>GST number</dt><dd>{% if vendor.gst_number %}<span class="gst">{{ vendor.gst_number }}</span>{% else %}—{% endif %}</dd></div>
+  <div style="grid-column:span 2"><dt>Address</dt><dd>{{ vendor.address|default:"—"|linebreaksbr }}</dd></div>
+</dl></div>
+
+<section class="kpis" aria-label="Vendor summary">
+  <div class="kpi teal"><div class="kpi-label">Stock bought</div><div class="kpi-value">{{ total_stock|trim }}</div></div>
+  <div class="kpi orange"><div class="kpi-label">Sold from it</div><div class="kpi-value">{{ total_sales|trim }}</div></div>
+  <div class="kpi indigo"><div class="kpi-label">Value (stock × price)</div><div class="kpi-value">₹{{ total_amount|floatformat:"2g" }}</div></div>
+  <div class="kpi green"><div class="kpi-label">Entries</div><div class="kpi-value">{{ entry_count }}</div><div class="kpi-sub">{{ products|length }} product{{ products|length|pluralize }}</div></div>
+</section>
+
+<div class="card mb-4">
+  <div class="card-head"><h2>Products supplied</h2></div>
+  <div class="table-responsive"><table class="table table-hover">
+    <thead><tr><th>Product name</th><th>HSN code</th><th class="num">Entries</th><th class="num">Stock bought</th><th>Last supply</th></tr></thead>
+    <tbody>{% for d in products %}<tr>
+      <td class="cell-strong"><a href="{% url 'product_detail' d.product.pk %}">{{ d.product.name }}</a></td><td>{{ d.product.hsn_code|default:"—" }}</td>
+      <td class="num">{{ d.entries }}</td><td class="num">{{ d.stock|trim }}</td><td class="text-nowrap">{{ d.last|date:"d-m-Y" }}</td></tr>
+    {% empty %}<tr><td colspan="5" class="empty"><strong>No products yet</strong>Pick this vendor in a Sheet entry to see products here.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>Date-wise history</h2><span class="hint">{{ entry_count }} entr{{ entry_count|pluralize:"y,ies" }}</span></div>
+  <div class="table-responsive"><table class="table table-hover">
+    <thead><tr><th>Date</th><th>Product</th><th>HSN code</th><th class="num">Stock</th><th class="num">Sales</th><th class="num">Balance</th><th class="num">MRP</th><th class="num">Disc %</th><th class="num">Price</th><th class="num no-print">Actions</th></tr></thead>
+    <tbody>{% for e in entries %}<tr>
+      <td class="cell-strong text-nowrap">{{ e.entry_date|date:"d-m-Y" }}</td>
+      <td><a href="{% url 'product_detail' e.product_id %}">{{ e.product.name }}</a></td><td>{{ e.product.hsn_code|default:"—" }}</td>
+      <td class="num">{{ e.stock|trim }}</td><td class="num">{% if e.sales is None %}<span class="text-muted">-</span>{% else %}{{ e.sales|trim }}{% endif %}</td>
+      <td class="num">{{ e.balance|trim }}</td>
+      <td class="num">{% if e.mrp is None %}<span class="text-muted">-</span>{% else %}₹{{ e.mrp|floatformat:"2g" }}{% endif %}</td><td class="num">{% if e.disc is None %}<span class="text-muted">-</span>{% else %}{{ e.disc|trim }}%{% endif %}</td><td class="num cell-strong">{% if e.price is None %}<span class="text-muted fw-normal">-</span>{% else %}₹{{ e.price|floatformat:"2g" }}{% endif %}</td>
+      <td class="num no-print"><a class="btn btn-outline-secondary btn-sm" href="{% url 'sheet_edit' e.pk %}?next={{ request.path|urlencode }}#entry-form"><svg class="ic"><use href="#i-edit"/></svg>Edit</a></td>
+    </tr>
+    {% empty %}<tr><td colspan="10" class="empty"><strong>No supply history yet</strong>Entries that use this vendor in the Sheet are listed here date-wise.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

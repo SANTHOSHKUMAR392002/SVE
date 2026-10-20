@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% block title %}Login{% endblock %}
+{% block public_content %}
+<div class="login">
+  <section class="login-art">
+    <div class="brand"><span class="login-logo"><img src="/static/img/logo-600.png" alt="{{ SHOP_NAME }}"></span></div>
+    <div>
+      <h1>{{ SHOP_NAME }}</h1>
+      <p>Stock, bills and reports for your shop, in one place.</p>
+    </div>
+    <div class="tagwall" aria-hidden="true">
+      <span>{{ SHOP_CODE }}-SW-000001</span><span class="hot">{{ SHOP_CODE }}-SW-000002</span><span>{{ SHOP_CODE }}-LT-000014</span>
+      <span>{{ SHOP_CODE }}-CB-000031</span><span>{{ SHOP_CODE }}-PL-000207</span><span>{{ SHOP_CODE }}-SW-000003</span>
+    </div>
+  </section>
+  <section class="login-form">
+    <div class="login-box">
+      <h2>Welcome back</h2>
+      <p class="sub">Login with your shop account to continue.</p>
+      <form method="post">{% csrf_token %}
+        {% if form.errors %}<div class="alert alert-danger" role="alert">Incorrect username or password.</div>{% endif %}
+        <div class="mb-3"><label class="form-label" for="id_username">Username</label><input id="id_username" name="username" class="form-control" autocomplete="username" required autofocus></div>
+        <div class="mb-4"><label class="form-label" for="id_password">Password</label><input id="id_password" name="password" type="password" class="form-control" autocomplete="current-password" required></div>
+        <button class="btn btn-primary">Login</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

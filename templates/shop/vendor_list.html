@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block title %}Vendors{% endblock %}
+{% load sheet_tags %}
+{% block content %}
+<div class="page-head">
+  <div><h1 class="page-title">Vendors</h1><div class="page-sub">{{ vendors|length }} vendor{{ vendors|length|pluralize }} · a vendor typed in the Sheet is saved here automatically. Click a vendor for details and history.</div></div>
+  <div class="page-actions"><button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#add-vendor" aria-expanded="{% if form.errors %}true{% else %}false{% endif %}"><svg class="ic"><use href="#i-plus"/></svg>Add vendor</button></div>
+</div>
+<div class="collapse mb-4 {% if form.errors %}show{% endif %}" id="add-vendor"><div class="card"><div class="card-head"><h2>New vendor</h2></div><div class="card-body">
+  <form method="post">{% csrf_token %}{% include "shop/_form_fields.html" with form=form cols="6" %}<button class="btn btn-primary mt-4"><svg class="ic"><use href="#i-plus"/></svg>Save vendor</button></form>
+</div></div></div>
+<form class="toolbar" method="get">
+  <div class="searchbox"><svg class="ic"><use href="#i-search"/></svg><input name="q" value="{{ q }}" class="form-control" placeholder="Search vendor name, phone, GST or ID" aria-label="Search vendors"></div>
+  <button class="btn btn-outline-secondary">Search</button>{% if q %}<a class="btn btn-outline-secondary" href="{% url 'vendor_list' %}">Clear</a>{% endif %}
+</form>
+<div class="card"><div class="table-responsive"><table class="table table-hover">
+  <thead><tr><th>ID</th><th>Vendor name</th><th>Phone</th><th>GST number</th><th class="num">Entries</th><th class="num">Stock bought</th><th>Last supply</th><th class="num no-print">Actions</th></tr></thead>
+  <tbody>{% for v in vendors %}<tr>
+    <td><span class="sku">{{ v.vendor_code }}</span></td>
+    <td class="cell-strong"><a href="{% url 'vendor_detail' v.pk %}">{{ v.name }}</a></td>
+    <td>{{ v.phone|default:"—" }}</td>
+    <td>{% if v.gst_number %}<span class="gst">{{ v.gst_number }}</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+    <td class="num">{{ v.entry_count }}</td>
+    <td class="num">{{ v.total_stock|default_if_none:0|trim }}</td>
+    <td class="text-nowrap">{% if v.last_date %}{{ v.last_date|date:"d-m-Y" }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+    <td class="num no-print"><a class="btn btn-sm btn-outline-secondary" href="{% url 'vendor_detail' v.pk %}">History</a> <a class="btn btn-sm btn-outline-secondary" href="{% url 'vendor_edit' v.pk %}"><svg class="ic"><use href="#i-edit"/></svg>Edit</a></td>
+  </tr>
+  {% empty %}<tr><td colspan="8" class="empty"><strong>No vendors yet</strong>Type a vendor name in the Sheet, or add one here.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1 class="page-title">{{ title }}</h1><div class="page-sub">{{ subtitle|default:'The product ID is created automatically when you save.' }}</div></div></div>
+<div class="row"><div class="col-xl-9">
+  <form method="post">{% csrf_token %}
+    <div class="card"><div class="card-body">{% include "shop/_form_fields.html" with form=form cols="6" %}</div></div>
+    <div class="action-bar"><a class="btn btn-outline-secondary" href="{% if cancel_url %}{{ cancel_url }}{% else %}{% url 'product_list' %}{% endif %}">Cancel</a><button class="btn btn-primary">Save</button></div>
+  </form>
+</div></div>
+{% endblock %}

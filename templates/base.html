@@ -1,0 +1,85 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Dashboard{% endblock %} | {{ SHOP_NAME }}</title>
+<link rel="icon" type="image/png" href="/static/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="/static/css/app.css?v=7" rel="stylesheet">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1" fill="currentColor"/></symbol>
+<symbol id="i-truck" viewBox="0 0 24 24"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol>
+<symbol id="i-in" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></symbol>
+<symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/></symbol>
+<symbol id="i-print" viewBox="0 0 24 24"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="i-sheet" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+</defs></svg>
+{% if user.is_authenticated %}
+{% with page=request.resolver_match.url_name %}
+<div class="app">
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <a class="brand" href="{% url 'dashboard' %}">
+      <span class="brand-mark logo"><img src="/static/img/logo-600.png" alt=""></span>
+      <span><span class="brand-name d-block">{{ SHOP_NAME }}</span><span class="brand-code">{{ SHOP_CODE }}</span></span>
+    </a>
+    <nav class="side-nav">
+      <a class="side-link {% if page == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><svg class="ic"><use href="#i-home"/></svg>Dashboard</a>
+      <div class="side-gap"></div>
+      <a class="side-link {% if page == 'sale_list' or page == 'sale_create' or page == 'sale_detail' %}active{% endif %}" href="{% url 'sale_list' %}"><svg class="ic"><use href="#i-receipt"/></svg>Sales / Bills</a>
+      <div class="side-gap"></div>
+      <a class="side-link {% if page == 'product_list' or page == 'product_create' or page == 'product_detail' or page == 'product_edit' %}active{% endif %}" href="{% url 'product_list' %}"><svg class="ic"><use href="#i-box"/></svg>Products</a>
+      <a class="side-link {% if page == 'vendor_list' or page == 'vendor_detail' or page == 'vendor_edit' %}active{% endif %}" href="{% url 'vendor_list' %}"><svg class="ic"><use href="#i-truck"/></svg>Vendors</a>
+      <div class="side-gap"></div>
+      <a class="side-link {% if page == 'sheet' or page == 'sheet_edit' %}active{% endif %}" href="{% url 'sheet' %}"><svg class="ic"><use href="#i-sheet"/></svg>Sheet</a>
+      <a class="side-link {% if page == 'reports' %}active{% endif %}" href="{% url 'reports' %}"><svg class="ic"><use href="#i-chart"/></svg>Reports</a>
+      {% if user.is_staff %}<div class="side-gap"></div><a class="side-link" href="/admin/"><svg class="ic"><use href="#i-shield"/></svg>Admin &amp; Staff</a>{% endif %}
+    </nav>
+    <div class="side-user">
+      <span class="avatar">{{ user.username|slice:":1"|upper }}</span>
+      <span class="side-user-name">{{ user.username }}</span>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-btn" title="Logout" aria-label="Logout"><svg class="ic"><use href="#i-out"/></svg></button></form>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  {% block sitewm %}<div class="site-wm" aria-hidden="true"></div>{% endblock %}
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="nav-toggle" aria-label="Open menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+      <a class="topbar-brand" href="{% url 'dashboard' %}">{{ SHOP_NAME }}</a>
+    </header>
+    <main class="content">
+      {% for message in messages %}<div class="alert alert-{% if message.level_tag == 'error' %}danger{% else %}{{ message.level_tag|default:'info' }}{% endif %} alert-dismissible fade show no-print" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>{% endfor %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endwith %}
+<script>
+(function(){var b=document.body,t=document.getElementById('nav-toggle'),s=document.getElementById('scrim');
+function set(o){b.classList.toggle('nav-open',o)}
+t.addEventListener('click',function(){set(!b.classList.contains('nav-open'))});
+s.addEventListener('click',function(){set(false)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')set(false)});})();
+</script>
+{% else %}{% block public_content %}{% endblock %}{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>{% block scripts %}{% endblock %}
+</body></html>
